@@ -2,6 +2,39 @@
 
 A minimalist, cohesive **CachyOS + Niri (Wayland) + Noctalia Shell** desktop environment and personal workstation toolkit. Midnight obsidian surfaces, restrained pastel lavender & celestial accents, fluid springs, crisp window framing, and an integrated PyQt6/CLI developer & AI workstation suite.
 
+![seiza. desktop showcase](images/02-bento-workstation.png)
+
+---
+
+## Live 30s Walkthrough
+
+![seiza. 30s live feature showcase](images/seiza-preview.webp)
+
+> **Full 30-second 1080p @ 60fps MP4 recording:** [`images/seiza-demo.mp4`](images/seiza-demo.mp4)
+
+---
+
+## Showcase & Features Gallery
+
+| Clean Moonlit Desktop & 3-Island Bar | Universal Command Centre & GTK4 Files |
+| :---: | :---: |
+| ![Clean Desktop](images/01-desktop.png) | ![Universal Command Centre](images/03-command-centre.png) |
+
+| AI, ML & Workstation Intelligence (`Super + G`) | System Health, Doctor & Pacman Receipts |
+| :---: | :---: |
+| ![AI Dashboard](images/04-ai-dashboard.png) | ![Health and Receipts](images/05-health-and-receipts.png) |
+
+| Wayland Display Studio (`Super + P`) | Focus Studio (Pomodoro, Notes, Snippets) |
+| :---: | :---: |
+| ![Display Studio](images/06-display-studio.png) | ![Focus Studio](images/07-focus-studio.png) |
+
+<details>
+<summary><b>Native Noctalia Hub & Workspace Switcher (click to expand)</b></summary>
+
+![Noctalia Hub](images/08-noctalia-hub.png)
+
+</details>
+
 ---
 
 ## Visual Identity & Stack
