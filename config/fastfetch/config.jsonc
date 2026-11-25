@@ -1,0 +1,113 @@
+{
+    "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+    "logo": {
+        "source": "~/.config/fastfetch/logo-seiza.txt",
+        "type": "file",
+        "position": "left",
+        "color": {
+            "1": "#C4B5FD",
+            "2": "#9CC9FF",
+            "3": "#F2B8D4",
+            "4": "#A6B0D0"
+        },
+        "padding": {
+            "top": 2,
+            "left": 2,
+            "right": 4
+        }
+    },
+    "display": {
+        "separator": "  ·  ",
+        "color": {
+            "keys": "#C4B5FD",
+            "title": "#EEF1FA"
+        }
+    },
+    "modules": [
+        {
+            "type": "custom",
+            "format": "\u001b[1;38;2;238;241;250mseiza\u001b[1;38;2;242;184;212m.\u001b[0m  \u001b[38;2;108;118;153m//\u001b[0m  \u001b[38;2;166;176;208mA system of my own.\u001b[0m"
+        },
+        {
+            "type": "custom",
+            "format": "\u001b[38;2;40;48;77m─────────────────────────────────────────────\u001b[0m"
+        },
+        {
+            "type": "title",
+            "color": {
+                "user": "#C4B5FD",
+                "at": "#6C7699",
+                "host": "#9CC9FF"
+            }
+        },
+        {
+            "type": "os",
+            "key": "󰣇 Base OS",
+            "keyColor": "#C4B5FD"
+        },
+        {
+            "type": "kernel",
+            "key": " Kernel",
+            "keyColor": "#9CC9FF"
+        },
+        {
+            "type": "wm",
+            "key": " Compositor",
+            "keyColor": "#C4B5FD"
+        },
+        {
+            "type": "shell",
+            "key": " Shell",
+            "keyColor": "#9CC9FF"
+        },
+        {
+            "type": "uptime",
+            "key": "󱑂 Uptime",
+            "keyColor": "#F2B8D4"
+        },
+        {
+            "type": "custom",
+            "format": "\u001b[38;2;40;48;77m─────────────────────────────────────────────\u001b[0m"
+        },
+        {
+            "type": "display",
+            "key": "󰍹 Display",
+            "keyColor": "#9CC9FF"
+        },
+        {
+            "type": "cpu",
+            "key": " Processor",
+            "keyColor": "#C4B5FD"
+        },
+        {
+            "type": "gpu",
+            "key": "󰢮 Graphics",
+            "keyColor": "#F2B8D4"
+        },
+        {
+            "type": "memory",
+            "key": "󰘚 Memory",
+            "keyColor": "#9CE0C2"
+        },
+        {
+            "type": "disk",
+            "key": "󰋊 Storage",
+            "keyColor": "#F5D6A8",
+            "folders": "/"
+        },
+        {
+            "type": "packages",
+            "key": "󰏖 Packages",
+            "keyColor": "#F5D6A8"
+        },
+        {
+            "type": "custom",
+            "format": "\u001b[38;2;40;48;77m─────────────────────────────────────────────\u001b[0m"
+        },
+        {
+            "type": "colors",
+            "symbol": "circle",
+            "paddingLeft": 0
+        }
+    ]
+}

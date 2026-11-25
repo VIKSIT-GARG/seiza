@@ -1,0 +1,61 @@
+// ────────────── seiza. — Niri Layout & Focus System ──────────────
+// https://github.com/YaLTeR/niri/wiki/Configuration:-Layout
+
+layout {
+    gaps 8
+    center-focused-column "never"
+    always-center-single-column
+    background-color "transparent" // Let Noctalia wallpaper show cleanly
+
+    preset-column-widths {
+        proportion 0.33333
+        proportion 0.50000
+        proportion 0.66667
+    }
+
+    default-column-width {
+        proportion 0.50000
+    }
+
+    focus-ring {
+        width 2
+        active-gradient from="#C4B5FD" to="#9CC9FF" angle=135 relative-to="workspace-view"
+        inactive-color "#28304D55"
+        urgent-color "#F28FAD"
+    }
+
+    border {
+        off
+    }
+
+    tab-indicator {
+        width 3
+        gap 6
+        length total-proportion=0.45
+        position "left"
+        place-within-column
+        corner-radius 6
+        active-color "#C4B5FD"
+        inactive-color "#28304D"
+        urgent-color "#F28FAD"
+    }
+
+    insert-hint {
+        color "#C4B5FD38"
+    }
+
+    shadow {
+        on
+        softness 18
+        spread 0
+        offset x=0 y=4
+        color "#05060E55"
+    }
+
+    struts {
+        left 0
+        right 0
+        top 0
+        bottom 0
+    }
+}

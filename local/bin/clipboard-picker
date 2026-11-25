@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# clipboard-picker — image-capable clipboard history via cliphist + fuzzel.
+# Text entries -> wl-copy as text. Image entries -> wl-copy --type <mime>.
+# Requires: cliphist watcher services running, fuzzel installed.
+# Usage: bind to Mod+Shift+V via `spawn-sh "clipboard-picker"`.
+set -euo pipefail
+
+for bin in cliphist fuzzel wl-copy; do
+    if ! command -v "$bin" >/dev/null 2>&1; then
+        notify-send "clipboard-picker" "Missing dependency: $bin" 2>/dev/null || true
+        echo "clipboard-picker: missing dependency: $bin" >&2
+        exit 1
+    fi
+done
+
+SEL="$(cliphist list | fuzzel --dmenu --prompt 'clipboard: ' --lines 15 --width 60) " || exit 0
+[ -z "${SEL:-}" ] && exit 0
+
+ID="${SEL%%$'\t'*}"
+
+# Image entries show up as `[[ binary data <size> <mime> ... ]]` in cliphist list.
+if [[ "$SEL" == *"[["*"binary data"* ]]; then
+    # cliphist short format: `[[ binary data 69 B png 1x1 ]]` -> map to mime.
+    FMT="$(grep -oP 'binary data \d+ B? \K[a-z0-9]+' <<<"$SEL" || true)"
+    case "${FMT:-}" in
+        png)  MIME="image/png" ;;
+        jpe?g) MIME="image/jpeg" ;;
+        gif)  MIME="image/gif" ;;
+        webp) MIME="image/webp" ;;
+        bmp)  MIME="image/bmp" ;;
+    esac
+    TMP="$(mktemp /tmp/clipboard-picker.XXXXXX)"
+    trap 'rm -f "$TMP"' EXIT
+    cliphist decode "$ID" > "$TMP"
+    # Fallback mime sniff on magic bytes if the preview line didn't parse.
+    if [ -z "${MIME:-}" ]; then
+        MIME="$(python3 -c "
+import sys
+h = open('$TMP','rb').read(12)
+if h[:8] == b'\x89PNG\r\n\x1a\n': print('image/png')
+elif h[:3] == b'\xff\xd8\xff': print('image/jpeg')
+elif h[:6] in (b'GIF87a', b'GIF89a'): print('image/gif')
+elif h[:4] == b'RIFF' and h[8:12] == b'WEBP': print('image/webp')
+else: print('image/png')
+")"
+    fi
+    wl-copy --type "$MIME" < "$TMP"
+else
+    cliphist decode "$ID" | wl-copy
+fi

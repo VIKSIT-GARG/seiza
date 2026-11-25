@@ -1,0 +1,437 @@
+# Noctalia Shell — seiza. Configuration
+config_version = 20
+
+[accessibility]
+high_contrast = false
+ui_scale = 1.05
+
+[audio]
+colorize_icons = false
+enable_notification_sounds = true
+enable_overdrive = false
+enable_power_sounds = true
+enable_screenshot_sounds = true
+enable_sounds = true
+enable_volume_sounds = true
+sound_theme = "freedesktop"
+sound_volume = 0.45
+spectrum_frame_rate = 60
+
+[backdrop]
+blur_intensity = 0.0
+enabled = true
+tint_intensity = 0.22
+
+[bar]
+order = [ "default" ]
+
+    [bar.default]
+    auto_hide = false
+    background_opacity = 0.0
+    border = "outline_variant"
+    border_width = 0.0
+    capsule = false
+    capsule_border_width = 1.0
+    capsule_fill = "surface_container"
+    capsule_opacity = 0.90
+    capsule_padding = 6.0
+    capsule_radius = 16
+    capsule_thickness = 0.88
+    center = [ "group:island_center" ]
+    compositor_blur = false
+    concave_edge_corners = false
+    contact_shadow = false
+    enabled = true
+    end = [ "group:island_right" ]
+    font_family = "Adwaita Sans"
+    font_scale = 0.93
+    font_weight = 500
+    hover_highlight = true
+    layer = "top"
+    margin_edge = 8
+    margin_ends = 12
+    margin_opposite_edge = 0
+    padding = 0
+    panel_overlap = 0
+    position = "top"
+    radius = 16
+    radius_bottom_left = 16
+    radius_bottom_right = 16
+    radius_top_left = 16
+    radius_top_right = 16
+    reserve_space = true
+    scale = 1.0
+    shadow = false
+    show_on_workspace_switch = true
+    show_tooltip = true
+    smart_auto_hide = false
+    start = [ "group:island_left" ]
+    thickness = 34
+    widget_spacing = 8
+
+        [[bar.default.capsule_group]]
+        id = "island_left"
+        members = [ "launcher", "workspaces", "active_window" ]
+        fill = "surface_container"
+        foreground = "on_surface"
+        opacity = 0.90
+        border = "outline_variant"
+        border_width = 1.0
+        radius = 17.0
+        padding = 12.0
+        widget_spacing = 10.0
+
+        [[bar.default.capsule_group]]
+        id = "island_center"
+        members = [ "clock" ]
+        fill = "surface_container"
+        foreground = "on_surface"
+        opacity = 0.92
+        border = "#C4B5FD44"
+        border_width = 1.0
+        radius = 17.0
+        padding = 16.0
+        widget_spacing = 8.0
+
+        [[bar.default.capsule_group]]
+        id = "island_right"
+        members = [ "media", "tray", "volume", "brightness", "battery", "control-center", "session" ]
+        fill = "surface_container"
+        foreground = "on_surface"
+        opacity = 0.90
+        border = "outline_variant"
+        border_width = 1.0
+        radius = 17.0
+        padding = 12.0
+        widget_spacing = 10.0
+
+[battery]
+warning_threshold = 15
+
+[brightness]
+enable_ddcutil = false
+minimum_brightness = 5.0
+sync_all_monitors = false
+
+[control_center]
+hidden_tabs = []
+show_avatar_border = true
+show_session_button = true
+show_shortcut_labels = true
+sidebar = "compact"
+sidebar_section = "compact"
+width = 720
+
+    [control_center.calendar]
+    show_events_card = true
+    show_week_numbers = false
+
+    [control_center.media]
+    show_visualizer = true
+
+    [[control_center.shortcuts]]
+    type = "wifi"
+
+    [[control_center.shortcuts]]
+    type = "bluetooth"
+
+    [[control_center.shortcuts]]
+    type = "caffeine"
+
+    [[control_center.shortcuts]]
+    type = "nightlight"
+
+    [[control_center.shortcuts]]
+    type = "notification"
+
+    [[control_center.shortcuts]]
+    type = "power_profile"
+
+    [[control_center.shortcuts]]
+    type = "viksit-garg/seiza:tile"
+
+[desktop_widgets]
+enabled = true
+schema_version = 2
+widget_order = []
+
+    [desktop_widgets.grid]
+    cell_size = 24
+    major_interval = 4
+    visible = false
+
+[dock]
+enabled = false
+auto_hide = false
+smart_auto_hide = false
+compositor_blur = false
+reserve_space = false
+
+[lockscreen]
+allow_empty_password = false
+blur_intensity = 0.0
+blurred_desktop = false
+dnd = false
+edge_smoothness = 0.35
+enabled = true
+fingerprint = true
+grace_period_seconds = 0
+lock_before_suspend = true
+monitors = []
+tint_color = "surface"
+tint_intensity = 0.24
+transition = [ "fade", "zoom" ]
+transition_duration = 800.0
+wallpaper = "__HOME__/Pictures/Wallpapers/Seiza/seiza-moonlit-peaks.png"
+
+[notification]
+background_opacity = 0.92
+border = true
+border_color = "outline_variant"
+border_width = 1.0
+collapse_on_dismiss = true
+colorize_icons = false
+enable_daemon = true
+follow_focused_output = false
+group_by_app = true
+history_retention_hours = 24
+keep_dismissed_in_history = true
+layer = "top"
+max_visible = 4
+offset_x = 14
+offset_y = 14
+position = "top_right"
+scale = 1.0
+show_actions = true
+show_app_name = true
+show_progress_bar = true
+width = 360
+
+[osd]
+background_opacity = 0.92
+border = true
+border_color = "outline_variant"
+border_width = 1.0
+enabled = true
+follow_focused_output = false
+hide_delay_ms = 1250
+offset_x = 14
+offset_y = 14
+orientation = "horizontal"
+position = "top_center"
+position_vertical = "top_center"
+scale = 1.0
+
+[shell]
+button_borders = true
+card_borders = true
+clipboard_auto_paste = "auto"
+clipboard_enabled = true
+clipboard_history_max_entries = 120
+clipboard_keep_from_closed_apps = true
+corner_radius_scale = 1.25
+date_format = "%A, %d %b"
+font_family = "Adwaita Sans"
+input_borders = true
+launch_apps_as_systemd_services = true
+niri_overview_close_on_launch_enabled = true
+niri_overview_type_to_launch_enabled = false
+password_style = "default"
+polkit_agent = true
+polkit_colorize_icons = false
+popup_borders = true
+popup_shadows = true
+settings_window_translucent = false
+shared_gl_context = true
+time_format = "{:%H:%M}"
+
+    [shell.animation]
+    enabled = true
+    speed = 1.08
+
+    [shell.launcher]
+    app_grid = false
+    auto_paste = "auto"
+    categories = true
+    category_icons_only = false
+    colorize_icons = false
+    compact = false
+    default_view = "recent"
+    fetch_exchange_rates = false
+    layout = "full"
+    pinned = [ "Alacritty", "zen", "org.gnome.Nautilus", "codium" ]
+    provider_prefix = "/"
+    search_position = "top"
+    show_app_actions = false
+    show_app_origin_indicator = true
+    show_icons = true
+    show_navigation_labels = true
+    sort_by_usage = true
+    track_usage = true
+    width = 720
+
+    [shell.panel]
+    border_color = "outline_variant"
+    border_width = 1.0
+    borders = true
+    clipboard_placement = "floating"
+    clipboard_position = "center"
+    control_center_placement = "attached"
+    control_center_position = "auto"
+    floating_layer = "overlay"
+    floating_offset = 10
+    launcher_placement = "floating"
+    launcher_position = "center"
+    list_item_background = true
+    session_placement = "floating"
+    session_position = "center"
+    shadow = true
+    transparency_mode = "solid"
+    wallpaper_placement = "floating"
+    wallpaper_position = "center"
+    wallpaper_show_names = true
+
+    [shell.screenshot]
+    annotate = false
+    append_mode_suffix = true
+    close_on_copy = true
+    close_on_save = true
+    copy_to_clipboard = true
+    directory = "__HOME__/Pictures/Screenshots"
+    filename_pattern = "Screenshot-%Y-%m-%d_%H-%M-%S"
+    format = "png"
+    freeze_screen = true
+    quality = 94
+    region_border_width = 2.0
+    region_dim_opacity = 0.50
+    save_to_file = true
+    show_cursor = false
+    show_region_dimensions = true
+    show_region_hint = true
+
+    [shell.session]
+    grid = true
+    grid_columns = 5
+    show_shortcuts = true
+
+    [shell.shadow]
+    alpha = 0.42
+    direction = "down"
+
+    [shell.window_switcher]
+    colorize_icons = false
+    current_workspace_only = false
+    mru = true
+    show_all_outputs = true
+    show_app_icon = true
+    show_caption = true
+    show_count = true
+    style = "carousel"
+
+[system.monitor]
+cpu_poll_seconds = 2.0
+disk_poll_seconds = 10.0
+enabled = true
+gpu_poll_seconds = 3.0
+memory_poll_seconds = 2.0
+network_poll_seconds = 3.0
+
+[theme]
+builtin = "Noctalia"
+custom_palette = "seiza"
+mode = "dark"
+pure_black_dark = false
+shell_mode = "follow"
+source = "custom"
+sync_color_scheme = true
+terminal_colors = "palette"
+wallpaper_scheme = "m3-content"
+
+    [theme.templates]
+    builtin_ids = [ "alacritty", "btop", "cava", "gtk3", "gtk4" ]
+    community_ids = []
+    enable_builtin_templates = true
+    enable_community_templates = false
+
+[wallpaper]
+directory = "__HOME__/Pictures/Wallpapers/Seiza"
+edge_smoothness = 0.35
+enabled = true
+fill_mode = "crop"
+sync_transitions = true
+transition = [ "fade", "zoom" ]
+transition_duration = 950.0
+transition_on_startup = false
+
+    [wallpaper.automation]
+    enabled = false
+    interval_seconds = 1800
+    order = "random"
+    pause_on_fullscreen = true
+    recursive = true
+
+    [wallpaper.default]
+    path = "__HOME__/Pictures/Wallpapers/Seiza/seiza-moonlit-peaks.png"
+
+[weather]
+enabled = false
+
+[widget.active_window]
+color = "on_surface_variant"
+colorize_icons = false
+display = "icon_and_text"
+icon_size = 14.0
+max_length = 200.0
+min_length = 40.0
+title_scroll = "none"
+type = "active_window"
+
+[widget.battery]
+icon_color = "secondary"
+type = "battery"
+
+[widget.brightness]
+icon_color = "tertiary"
+type = "brightness"
+
+[widget.clock]
+color = "on_surface"
+format = "{:%H:%M  ·  %a %d %b}"
+type = "clock"
+
+[widget.launcher]
+color = "primary"
+glyph = "moon-stars"
+icon_color = "primary"
+type = "launcher"
+
+[widget.media]
+art_size = 14.0
+color = "secondary"
+max_length = 160.0
+min_length = 48.0
+title_scroll = "none"
+type = "media"
+
+[widget.tray]
+colorize_icons = false
+type = "tray"
+
+[widget.volume]
+device = "output"
+icon_color = "secondary"
+type = "volume"
+
+[widget.workspaces]
+active_pill_size = 8.0
+capsule_radius = 9.0
+color = "primary"
+colorize_icons = false
+hide_when_empty = false
+icon_color = "secondary"
+inactive_pill_size = 4.0
+label_source = "id"
+pill_scale = 0.90
+show_labels = true
+style = "focus_hint"
+type = "workspaces"

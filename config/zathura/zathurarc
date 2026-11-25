@@ -1,0 +1,26 @@
+# seiza. — Zathura PDF Reader
+set font "Adwaita Sans 10"
+set default-bg "#0D101D"
+set default-fg "#EEF1FA"
+set statusbar-bg "#15192E"
+set statusbar-fg "#A6B0D0"
+set inputbar-bg "#15192E"
+set inputbar-fg "#EEF1FA"
+set notification-bg "#15192E"
+set notification-fg "#EEF1FA"
+set notification-error-bg "#15192E"
+set notification-error-fg "#F28FAD"
+set notification-warning-bg "#15192E"
+set notification-warning-fg "#F5D6A8"
+set highlight-color "rgba(196, 181, 253, 0.35)"
+set highlight-active-color "rgba(242, 184, 212, 0.55)"
+set completion-bg "#15192E"
+set completion-fg "#EEF1FA"
+set completion-highlight-bg "#272F52"
+set completion-highlight-fg "#C4B5FD"
+set recolor true
+set recolor-lightcolor "#0D101D"
+set recolor-darkcolor "#EEF1FA"
+set recolor-keephue true
+set guioptions "sv"
+set scroll-step 50

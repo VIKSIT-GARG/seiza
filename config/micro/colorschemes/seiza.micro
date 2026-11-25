@@ -1,0 +1,43 @@
+# seiza. — Micro Editor Colorscheme
+color-link default "#EEF1FA,#0D101D"
+color-link comment "#6C7699"
+
+color-link identifier "#9CC9FF"
+color-link identifier.class "#B8DAFF"
+color-link identifier.var "#EEF1FA"
+
+color-link constant "#F5D6A8"
+color-link constant.number "#F5D6A8"
+color-link constant.string "#9CE0C2"
+
+color-link symbol "#A6B0D0"
+color-link symbol.brackets "#A6B0D0"
+color-link symbol.tag "#C4B5FD"
+
+color-link type "#96E0EA"
+color-link type.keyword "#F2B8D4"
+
+color-link special "#F2B8D4"
+color-link statement "#C4B5FD"
+color-link preproc "#9CC9FF"
+
+color-link underlined "#96E0EA"
+color-link error "bold #F28FAD"
+color-link todo "bold #F5D6A8"
+
+color-link diff-added "#9CE0C2"
+color-link diff-modified "#F5D6A8"
+color-link diff-deleted "#F28FAD"
+
+color-link gutter-error "#F28FAD"
+color-link gutter-warning "#F5D6A8"
+
+color-link statusline "#EEF1FA,#15192E"
+color-link tabbar "#EEF1FA,#15192E"
+color-link indent-char "#28304D"
+color-link line-number "#5A6385"
+color-link current-line-number "#C4B5FD"
+
+color-link cursor-line "#15192E,#EEF1FA"
+color-link color-column "#15192E"
+color-link division-line "#28304D"

@@ -1,0 +1,43 @@
+// ────────────── seiza. — Niri 165Hz Fluid Animations ──────────────
+animations {
+    slowdown 0.85
+
+    workspace-switch {
+        spring damping-ratio=0.90 stiffness=820 epsilon=0.0001
+    }
+
+    window-open {
+        duration-ms 210
+        curve "ease-out-expo"
+    }
+
+    window-close {
+        duration-ms 165
+        curve "ease-out-cubic"
+    }
+
+    horizontal-view-movement {
+        spring damping-ratio=0.90 stiffness=820 epsilon=0.0001
+    }
+
+    window-movement {
+        spring damping-ratio=0.88 stiffness=860 epsilon=0.0001
+    }
+
+    window-resize {
+        spring damping-ratio=0.90 stiffness=920 epsilon=0.0001
+    }
+
+    config-notification-open-close {
+        spring damping-ratio=0.84 stiffness=1050 epsilon=0.001
+    }
+
+    screenshot-ui-open {
+        duration-ms 200
+        curve "ease-out-quad"
+    }
+
+    overview-open-close {
+        spring damping-ratio=0.88 stiffness=880 epsilon=0.0001
+    }
+}

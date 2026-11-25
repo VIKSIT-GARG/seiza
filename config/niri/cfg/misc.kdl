@@ -1,0 +1,53 @@
+// ────────────── seiza. — Misc, Overview & Recent Windows ──────────────
+prefer-no-csd
+screenshot-path "~/Pictures/Screenshots/Screenshot-%Y-%m-%d_%H-%M-%S.png"
+
+environment {
+    ELECTRON_OZONE_PLATFORM_HINT "auto"
+    QT_QPA_PLATFORM "wayland"
+    QT_QPA_PLATFORMTHEME "gtk3"
+    QT_WAYLAND_DISABLE_WINDOWDECORATION "1"
+    XDG_CURRENT_DESKTOP "niri"
+    XDG_SESSION_TYPE "wayland"
+    GSK_RENDERER "gl"
+}
+
+cursor {
+    xcursor-theme "capitaine-cursors"
+    xcursor-size 24
+}
+
+overview {
+    zoom 0.54
+    backdrop-color "#080A14"
+    workspace-shadow {
+        softness 28
+        spread 4
+        offset x=0 y=8
+        color "#05060E80"
+    }
+}
+
+recent-windows {
+    debounce-ms 700
+    open-delay-ms 110
+    highlight {
+        active-color "#C4B5FD"
+        urgent-color "#F28FAD"
+        padding 22
+        corner-radius 14
+    }
+    previews {
+        max-height 440
+        max-scale 0.48
+    }
+}
+
+debug {
+    // Allows notification actions and window activation from Noctalia.
+    honor-xdg-activation-with-invalid-serial
+}
+
+hotkey-overlay {
+    skip-at-startup
+}

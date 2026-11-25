@@ -1,0 +1,34 @@
+# ────────────── seiza. — CAVA Audio Visualizer ──────────────
+[general]
+framerate = 60
+bars = 0
+bar_width = 2
+bar_spacing = 1
+lower_cutoff_freq = 50
+higher_cutoff_freq = 10000
+
+[input]
+method = pipewire
+source = auto
+
+[output]
+method = ncurses
+style = stereo
+
+[color]
+theme = "noctalia"
+gradient = 1
+gradient_count = 6
+gradient_color_1 = '#6E72B8'
+gradient_color_2 = '#9CC9FF'
+gradient_color_3 = '#C4B5FD'
+gradient_color_4 = '#D8B4E8'
+gradient_color_5 = '#F2B8D4'
+gradient_color_6 = '#EEF1FA'
+
+[smoothing]
+integral = 78
+monstercat = 1
+waves = 0
+gravity = 100
+ignore = 0

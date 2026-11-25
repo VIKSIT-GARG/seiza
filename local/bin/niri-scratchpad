@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+# niri-scratchpad — Omarchy quake-console port for Niri.
+#
+# Omarchy upstream (basecamp/omarchy default/hypr/qconsole.lua + bindings/tiling.lua):
+#   SUPER+S / SUPER+grave          -> toggle special:scratchpad overlay
+#   SUPER+ALT+S / SUPER+SHIFT+grave -> move focused window to scratchpad
+#   overlay: dimmed top dropdown, 50% screen height, spawn-if-empty terminal.
+#
+# Niri has no special workspaces, so this emulates it with a parking workspace
+# (10): hidden = parked on 10, shown = moved to your current workspace, top
+# anchored, half height (window-rule in rules.kdl matches APP_ID).
+#
+# Usage:
+#   niri-scratchpad toggle      # Omarchy SUPER+S / SUPER+grave
+#   niri-scratchpad move-here   # Omarchy SUPER+ALT+S (park focused window)
+set -euo pipefail
+
+LOCK="${XDG_RUNTIME_DIR:-/tmp}/niri-scratchpad.lock"
+# Declared named workspace in config.kdl: always exists, stable reference.
+PARK_WS="scratchpad"
+APP_ID="scratchpad"
+
+exec 9>"$LOCK"
+flock -n 9 || exit 0  # ignore rapid double-press races
+
+MODE="${1:-toggle}"
+
+# Scratchpad window id (empty if user closed it / never opened).
+WIN_ID="$(niri msg -j windows | python3 -c "
+import json, sys
+for w in json.load(sys.stdin):
+    if (w.get('app_id') or '').lower() == '$APP_ID':
+        print(w['id'])
+        break
+")"
+
+if [ "$MODE" = "move-here" ]; then
+    # Omarchy "Move window to scratchpad": park the focused window on the
+    # scratchpad workspace (silent, no follow).
+    FOCUSED_ID="$(niri msg -j focused-window | python3 -c "import json,sys; print(json.load(sys.stdin)['id'])")"
+    niri msg action move-window-to-workspace --window-id "$FOCUSED_ID" --focus false "$PARK_WS"
+    exit 0
+fi
+
+# --- toggle ---
+if [ -z "${WIN_ID:-}" ]; then
+    # Seed-if-empty (Omarchy omarchy-agent seed): open a fresh terminal.
+    # The rules.kdl window-rule drops it top-anchored at 50% height.
+    niri msg action spawn -- alacritty --class "$APP_ID" --title "$APP_ID" &
+    exit 0
+fi
+
+FOCUSED_ID="$(niri msg -j focused-window | python3 -c "import json,sys; print(json.load(sys.stdin)['id'])")"
+# Current workspace index (references take index or name, not internal id).
+CUR_WS="$(niri msg -j workspaces | python3 -c "
+import json, sys
+for ws in json.load(sys.stdin):
+    if ws.get('is_focused'):
+        print(ws['idx'])
+        break
+")"
+WIN_WS="$(niri msg -j windows | python3 -c "
+import json, sys
+wins = {w['id']: w['workspace_id'] for w in json.load(sys.stdin)}
+print(wins.get($WIN_ID, ''))
+")"
+WIN_IDX="$(niri msg -j workspaces | python3 -c "
+import json, sys
+for ws in json.load(sys.stdin):
+    if str(ws['id']) == '$WIN_WS':
+        print(ws['idx'])
+        break
+")"
+
+if [ "$WIN_ID" = "$FOCUSED_ID" ]; then
+    # Overlay open and focused -> dismiss to parking workspace (no follow:
+    # stay where you are, like the overlay retracting).
+    niri msg action move-window-to-workspace --window-id "$WIN_ID" --focus false "$PARK_WS"
+elif [ "${WIN_IDX:-}" = "${CUR_WS:-}" ]; then
+    # Overlay visible on this workspace but not focused -> focus it.
+    niri msg action focus-window --id "$WIN_ID"
+else
+    # Hidden (parked or elsewhere) -> pull it onto THIS workspace (Quake-style:
+    # the dropdown opens wherever you are) and focus it.
+    niri msg action move-window-to-workspace --window-id "$WIN_ID" --focus false "$CUR_WS"
+    niri msg action focus-window --id "$WIN_ID"
+fi

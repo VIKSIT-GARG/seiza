@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=seiza. Screen Color Picker
+Comment=Sample any pixel on screen to clipboard HEX
+Exec=__HOME__/.local/bin/seiza color
+Icon=color-picker
+Terminal=false
+Categories=Graphics;Utility;
+Keywords=seiza;color;picker;hex;

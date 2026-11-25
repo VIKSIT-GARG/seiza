@@ -1,0 +1,532 @@
+#!/usr/bin/env python3
+"""
+theme-sync: seiza. universal desktop theme synchronizer.
+Synchronizes colors across Noctalia, Niri, Alacritty, Btop, CAVA, Fuzzel,
+GTK 3/4, Spicetify, Vesktop, VSCodium, Antigravity IDE, Firefox, and Zen.
+Default (--seiza / --pinned): locks to the cohesive seiza. celestial palette.
+Dynamic (--dynamic or <image>): blends wallpaper accents into midnight surfaces.
+"""
+
+import json
+import os
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+CONFIG_DIR = Path.home() / ".config"
+LOCK_FILE = CONFIG_DIR / "cyberglass_theme_mode.txt"
+
+CELESTIA_PALETTE = {
+    "primary": "#C4B5FD",
+    "secondary": "#9CC9FF",
+    "tertiary": "#F2B8D4",
+    "error": "#F28FAD",
+    "background": "#0D101D",
+    "surface": "#15192E",
+    "surface_sunken": "#0A0C17",
+    "hover": "#1E2440",
+    "border": "#28304D",
+    "foreground": "#EEF1FA",
+    "muted": "#A6B0D0",
+    "dim": "#6C7699",
+    "focus_from": "#C4B5FD",
+    "focus_to": "#9CC9FF",
+}
+
+
+def get_current_wallpaper():
+    try:
+        res = subprocess.run(
+            ["noctalia", "msg", "wallpaper-get"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        path = res.stdout.strip()
+        if path and os.path.isfile(path):
+            return path
+    except Exception:
+        pass
+
+    fallback = Path.home() / "Pictures/Wallpapers/Seiza/seiza-moonlit-peaks.png"
+    if fallback.is_file():
+        return str(fallback)
+    return None
+
+
+def _harmonize_pastel(hex_color, target_hex="#C4B5FD", weight=0.30):
+    try:
+        h1 = hex_color.lstrip("#")
+        h2 = target_hex.lstrip("#")
+        r1, g1, b1 = int(h1[0:2], 16), int(h1[2:4], 16), int(h1[4:6], 16)
+        r2, g2, b2 = int(h2[0:2], 16), int(h2[2:4], 16), int(h2[4:6], 16)
+        r = round(r1 * (1 - weight) + r2 * weight)
+        g = round(g1 * (1 - weight) + g2 * weight)
+        b = round(b1 * (1 - weight) + b2 * weight)
+        lum = 0.2126 * r + 0.7152 * g + 0.0722 * b
+        if lum < 155:
+            scale = 155 / max(lum, 1)
+            r = min(245, round(r * scale))
+            g = min(245, round(g * scale))
+            b = min(245, round(b * scale))
+        return f"#{r:02x}{g:02x}{b:02x}"
+    except Exception:
+        return target_hex
+
+
+def extract_palette(image_path):
+    cmd = ["noctalia", "theme", image_path, "--dark", "--scheme", "m3-content"]
+    res = subprocess.run(cmd, capture_output=True, text=True)
+    if res.returncode != 0:
+        return CELESTIA_PALETTE
+
+    try:
+        data = json.loads(res.stdout)
+        primary = _harmonize_pastel(data.get("primary", "#C4B5FD"), "#C4B5FD", 0.30)
+        secondary = _harmonize_pastel(data.get("secondary", "#9CC9FF"), "#9CC9FF", 0.30)
+        tertiary = _harmonize_pastel(data.get("tertiary", "#F2B8D4"), "#F2B8D4", 0.35)
+        pal = dict(CELESTIA_PALETTE)
+        pal.update(
+            {
+                "primary": primary,
+                "secondary": secondary,
+                "tertiary": tertiary,
+                "focus_from": primary,
+                "focus_to": secondary,
+            }
+        )
+        return pal
+    except Exception:
+        return CELESTIA_PALETTE
+
+
+def update_niri(pal):
+    layout_file = CONFIG_DIR / "niri/cfg/layout.kdl"
+    if not layout_file.is_file():
+        return
+
+    txt = layout_file.read_text()
+    txt = re.sub(
+        r"focus-ring\s*\{[^}]*\}",
+        f'''focus-ring {{
+        width 2
+        active-gradient from="{pal['focus_from']}" to="{pal['focus_to']}" angle=135 relative-to="workspace-view"
+        inactive-color "{pal['border']}55"
+        urgent-color "{pal['error']}"
+    }}''',
+        txt,
+    )
+    layout_file.write_text(txt)
+    subprocess.run(["niri", "msg", "action", "load-config-file"], capture_output=True)
+
+
+def update_cava(pal):
+    cava_conf = CONFIG_DIR / "cava/config"
+    if not cava_conf.is_file():
+        return
+    txt = cava_conf.read_text()
+    txt = re.sub(r"gradient_color_2\s*=\s*'[^']*'", f"gradient_color_2 = '{pal['secondary']}'", txt)
+    txt = re.sub(r"gradient_color_3\s*=\s*'[^']*'", f"gradient_color_3 = '{pal['primary']}'", txt)
+    txt = re.sub(r"gradient_color_5\s*=\s*'[^']*'", f"gradient_color_5 = '{pal['tertiary']}'", txt)
+    cava_conf.write_text(txt)
+    subprocess.run(["pkill", "-USR2", "cava"], capture_output=True)
+
+
+def update_noctalia(mode="seiza"):
+    if mode == "dynamic":
+        subprocess.run(
+            ["noctalia", "msg", "color-scheme-set", "wallpaper", "m3-content"],
+            capture_output=True,
+        )
+    else:
+        subprocess.run(
+            ["noctalia", "msg", "color-scheme-set", "custom", "seiza"],
+            capture_output=True,
+        )
+    subprocess.run(["noctalia", "msg", "templates-apply"], capture_output=True)
+
+
+def update_fuzzel(pal):
+    fuzzel_ini = CONFIG_DIR / "fuzzel/fuzzel.ini"
+    if not fuzzel_ini.is_file():
+        return
+    p = pal["primary"].lstrip("#").lower()
+    s = pal["secondary"].lstrip("#").lower()
+    txt = fuzzel_ini.read_text()
+    txt = re.sub(r"^prompt=.*$", f"prompt={p}ff", txt, flags=re.M)
+    txt = re.sub(r"^match=.*$", f"match={p}ff", txt, flags=re.M)
+    txt = re.sub(r"^selection-match=.*$", f"selection-match={s}ff", txt, flags=re.M)
+    fuzzel_ini.write_text(txt)
+
+
+def update_spotify(pal):
+    color_ini = CONFIG_DIR / "spicetify/Themes/CyberGlass/color.ini"
+    if not color_ini.is_file():
+        return
+
+    p = pal["primary"].lstrip("#")
+    s = pal["secondary"].lstrip("#")
+    content = f"""; CELESTIA Spicetify Palette
+[CyberGlass]
+text               = EEF1FA
+subtext            = A6B0D0
+main               = 0D101D
+main-elevated      = 15192E
+highlight          = 1E2440
+highlight-elevated = 28304D
+sidebar            = 0A0C17
+player             = 0A0C17
+card               = 15192E
+shadow             = 05060E
+selected-row       = {p}
+button             = {p}
+button-active      = {s}
+button-disabled    = 28304D
+tab-active         = {p}
+notification       = {p}
+notification-error = F28FAD
+misc               = {p}
+"""
+    color_ini.write_text(content)
+    subprocess.Popen(["spicetify", "refresh"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+def update_editor_settings(file_path, pal):
+    if not file_path.is_file():
+        return
+    try:
+        data = json.loads(file_path.read_text())
+        customizations = data.get("workbench.colorCustomizations", {})
+        customizations.update(
+            {
+                "editor.background": pal["background"],
+                "editor.foreground": pal["foreground"],
+                "sideBar.background": pal["surface_sunken"],
+                "sideBar.border": pal["border"],
+                "sideBarTitle.foreground": pal["foreground"],
+                "sideBarSectionHeader.background": pal["surface"],
+                "sideBarSectionHeader.foreground": pal["muted"],
+                "activityBar.background": pal["background"],
+                "activityBar.foreground": pal["primary"],
+                "activityBar.activeBorder": pal["primary"],
+                "activityBarBadge.background": pal["primary"],
+                "activityBarBadge.foreground": pal["background"],
+                "statusBar.background": pal["surface_sunken"],
+                "statusBar.foreground": pal["muted"],
+                "statusBar.border": pal["border"],
+                "statusBarItem.remoteBackground": pal["secondary"],
+                "statusBarItem.remoteForeground": pal["background"],
+                "titleBar.activeBackground": pal["surface_sunken"],
+                "titleBar.activeForeground": pal["foreground"],
+                "tab.activeBackground": pal["surface"],
+                "tab.activeForeground": pal["foreground"],
+                "tab.activeBorderTop": pal["primary"],
+                "tab.inactiveBackground": pal["surface_sunken"],
+                "tab.inactiveForeground": pal["dim"],
+                "editorGroupHeader.tabsBackground": pal["surface_sunken"],
+                "focusBorder": pal["primary"],
+                "button.background": pal["primary"],
+                "button.hoverBackground": pal["secondary"],
+                "button.foreground": pal["background"],
+                "list.activeSelectionBackground": f"{pal['primary']}26",
+                "list.activeSelectionForeground": pal["foreground"],
+                "list.hoverBackground": f"{pal['primary']}14",
+                "badge.background": pal["primary"],
+                "badge.foreground": pal["background"],
+                "terminal.background": pal["background"],
+                "terminal.foreground": pal["foreground"],
+                "terminal.ansiBlue": pal["secondary"],
+                "terminal.ansiMagenta": pal["primary"],
+                "terminal.ansiCyan": "#96E0EA",
+            }
+        )
+        data["workbench.colorCustomizations"] = customizations
+        file_path.write_text(json.dumps(data, indent=4) + "\n")
+    except Exception:
+        pass
+
+
+def update_browsers(pal):
+    css_content = f"""/* CELESTIA Browser Theme */
+:root {{
+  --celestia-bg: {pal['background']};
+  --celestia-surface: {pal['surface']};
+  --celestia-header: {pal['surface_sunken']};
+  --celestia-accent: {pal['primary']};
+  --celestia-secondary: {pal['secondary']};
+  --celestia-pink: {pal['tertiary']};
+  --celestia-text: {pal['foreground']};
+  --celestia-border: {pal['border']};
+}}
+
+#navigator-toolbox, #nav-bar, #TabsToolbar {{
+  background-color: var(--celestia-header) !important;
+  color: var(--celestia-text) !important;
+  border-bottom: 1px solid var(--celestia-border) !important;
+}}
+
+.tabbrowser-tab[selected="true"] .tab-background {{
+  background-color: var(--celestia-surface) !important;
+  border-top: 2px solid var(--celestia-accent) !important;
+  border-radius: 8px 8px 0 0 !important;
+}}
+
+.tabbrowser-tab[selected="true"] .tab-label {{
+  color: var(--celestia-text) !important;
+  font-weight: 600 !important;
+}}
+
+#urlbar-background {{
+  background-color: var(--celestia-surface) !important;
+  border: 1px solid var(--celestia-border) !important;
+  border-radius: 10px !important;
+}}
+
+#urlbar[focused="true"] #urlbar-background {{
+  border-color: var(--celestia-accent) !important;
+}}
+
+::selection {{
+  background-color: #272F52 !important;
+  color: var(--celestia-text) !important;
+}}
+"""
+    for prof in (CONFIG_DIR / "mozilla/firefox").glob("*.default-release"):
+        chrome_dir = prof / "chrome"
+        chrome_dir.mkdir(parents=True, exist_ok=True)
+        (chrome_dir / "userChrome.css").write_text(css_content)
+
+    for prof in (CONFIG_DIR / "zen").glob("*.Default*"):
+        chrome_dir = prof / "chrome"
+        chrome_dir.mkdir(parents=True, exist_ok=True)
+        (chrome_dir / "userChrome.css").write_text(css_content)
+
+
+def update_discord(pal):
+    css_content = f"""/**
+ * @name Celestia Theme
+ */
+:root {{
+  --celestia-bg: {pal['background']};
+  --celestia-surface: {pal['surface']};
+  --celestia-sunken: {pal['surface_sunken']};
+  --celestia-accent: {pal['primary']};
+  --celestia-secondary: {pal['secondary']};
+  --celestia-text: {pal['foreground']};
+  --celestia-border: {pal['border']};
+}}
+
+.theme-dark, .theme-light, #app-mount {{
+  background-color: var(--celestia-bg) !important;
+  color: var(--celestia-text) !important;
+}}
+
+nav[class*="guilds"], div[class*="sidebar"] {{
+  background-color: var(--celestia-sunken) !important;
+  border-right: 1px solid var(--celestia-border) !important;
+}}
+
+main[class*="chatContent"], section[class*="title"] {{
+  background-color: var(--celestia-bg) !important;
+}}
+
+div[class*="modeSelected"] a {{
+  background: {pal['primary']}22 !important;
+  border-left: 2px solid var(--celestia-accent) !important;
+}}
+
+span[class*="mention"], div[class*="unreadPill"], span[class*="numberBadge"] {{
+  background-color: var(--celestia-accent) !important;
+  color: var(--celestia-bg) !important;
+}}
+
+button[class*="lookFilled"] {{
+  background-color: var(--celestia-accent) !important;
+  color: var(--celestia-bg) !important;
+}}
+
+button[class*="lookFilled"]:hover {{
+  background-color: var(--celestia-secondary) !important;
+  color: var(--celestia-bg) !important;
+}}
+"""
+    themes_dir = CONFIG_DIR / "vesktop/themes"
+    themes_dir.mkdir(parents=True, exist_ok=True)
+    (themes_dir / "Celestia.theme.css").write_text(css_content)
+
+    settings_dir = CONFIG_DIR / "vesktop/settings"
+    settings_dir.mkdir(parents=True, exist_ok=True)
+    (settings_dir / "quickCss.css").write_text(css_content)
+
+
+def update_gtk(pal):
+    gtk3_css = f"""/* CELESTIA — GTK 3 Unified Theme */
+@import url("noctalia.css");
+
+@define-color accent_color {pal['primary']};
+@define-color accent_bg_color {pal['primary']};
+@define-color accent_fg_color {pal['background']};
+@define-color destructive_color {pal['error']};
+@define-color destructive_bg_color {pal['error']};
+@define-color destructive_fg_color {pal['background']};
+@define-color window_bg_color {pal['background']};
+@define-color window_fg_color {pal['foreground']};
+@define-color view_bg_color {pal['surface']};
+@define-color view_fg_color {pal['foreground']};
+@define-color headerbar_bg_color {pal['surface_sunken']};
+@define-color headerbar_fg_color {pal['foreground']};
+@define-color sidebar_bg_color {pal['surface_sunken']};
+@define-color sidebar_fg_color #DCE2F5;
+@define-color card_bg_color {pal['surface']};
+@define-color card_fg_color {pal['foreground']};
+@define-color popover_bg_color {pal['surface']};
+@define-color popover_fg_color {pal['foreground']};
+
+window.background {{
+  border-radius: 12px;
+}}
+
+headerbar {{
+  border-bottom: 1px solid {pal['primary']}29;
+}}
+
+button.suggested-action {{
+  background-color: {pal['primary']};
+  color: {pal['background']};
+}}
+
+button.suggested-action:hover {{
+  background-color: {pal['secondary']};
+  color: {pal['background']};
+}}
+"""
+    gtk4_css = f"""/* CELESTIA — GTK 4 & Libadwaita (Nautilus) Unified Theme */
+@import url("noctalia.css");
+
+@define-color accent_color {pal['primary']};
+@define-color accent_bg_color {pal['primary']};
+@define-color accent_fg_color {pal['background']};
+@define-color destructive_color {pal['error']};
+@define-color destructive_bg_color {pal['error']};
+@define-color destructive_fg_color {pal['background']};
+@define-color window_bg_color {pal['background']};
+@define-color window_fg_color {pal['foreground']};
+@define-color view_bg_color {pal['surface']};
+@define-color view_fg_color {pal['foreground']};
+@define-color headerbar_bg_color {pal['surface_sunken']};
+@define-color headerbar_fg_color {pal['foreground']};
+@define-color sidebar_bg_color {pal['surface_sunken']};
+@define-color sidebar_fg_color #DCE2F5;
+@define-color secondary_sidebar_bg_color {pal['background']};
+@define-color card_bg_color {pal['surface']};
+@define-color card_fg_color {pal['foreground']};
+@define-color popover_bg_color {pal['surface']};
+@define-color popover_fg_color {pal['foreground']};
+
+:root {{
+  --accent-color: {pal['primary']};
+  --accent-bg-color: {pal['primary']};
+  --accent-fg-color: {pal['background']};
+  --window-bg-color: {pal['background']};
+  --window-fg-color: {pal['foreground']};
+  --view-bg-color: {pal['surface']};
+  --view-fg-color: {pal['foreground']};
+  --headerbar-bg-color: {pal['surface_sunken']};
+  --headerbar-fg-color: {pal['foreground']};
+  --sidebar-bg-color: {pal['surface_sunken']};
+  --sidebar-fg-color: #DCE2F5;
+  --card-bg-color: {pal['surface']};
+  --card-fg-color: {pal['foreground']};
+  --popover-bg-color: {pal['surface']};
+  --popover-fg-color: {pal['foreground']};
+  --shade-color: rgba(5, 6, 14, 0.45);
+}}
+
+window.background {{
+  border-radius: 12px;
+}}
+
+headerbar {{
+  border-bottom: 1px solid {pal['primary']}29;
+}}
+
+.navigation-sidebar {{
+  border-right: 1px solid rgba(40, 48, 77, 0.85);
+}}
+
+.navigation-sidebar row:selected {{
+  background-color: {pal['primary']}2E;
+  color: {pal['foreground']};
+}}
+
+button.suggested-action {{
+  background-color: {pal['primary']};
+  color: {pal['background']};
+}}
+
+button.suggested-action:hover {{
+  background-color: {pal['secondary']};
+  color: {pal['background']};
+}}
+"""
+    gtk3 = CONFIG_DIR / "gtk-3.0/gtk.css"
+    gtk4 = CONFIG_DIR / "gtk-4.0/gtk.css"
+    gtk3.parent.mkdir(parents=True, exist_ok=True)
+    gtk4.parent.mkdir(parents=True, exist_ok=True)
+    gtk3.write_text(gtk3_css)
+    gtk4.write_text(gtk4_css)
+
+
+def main():
+    args = sys.argv[1:]
+    if "--status" in args:
+        current_mode = LOCK_FILE.read_text().strip() if LOCK_FILE.is_file() else "seiza"
+        print(f"\033[1;35m[theme-sync]\033[0m seiza. theme mode: \033[1;36m{current_mode}\033[0m")
+        sys.exit(0)
+
+    mode = "seiza"
+    target_wall = None
+
+    if "--dynamic" in args:
+        mode = "dynamic"
+    for arg in args:
+        if not arg.startswith("-") and os.path.isfile(arg):
+            target_wall = os.path.abspath(arg)
+            subprocess.run(["noctalia", "msg", "wallpaper-set", target_wall], capture_output=True)
+            break
+
+    if mode == "dynamic":
+        if not target_wall:
+            target_wall = get_current_wallpaper()
+        if target_wall:
+            print(f"\033[1;35m[theme-sync]\033[0m Harmonizing seiza. tones from: {target_wall}")
+            pal = extract_palette(target_wall)
+        else:
+            pal = CELESTIA_PALETTE
+        LOCK_FILE.write_text("dynamic")
+    else:
+        pal = CELESTIA_PALETTE
+        LOCK_FILE.write_text("seiza")
+        print("\033[1;35m[theme-sync]\033[0m Synchronizing seiza. unified palette.")
+
+    print(f"\033[1;35m  ✦ Primary:\033[0m   {pal['primary']}")
+    print(f"\033[1;36m  ✦ Secondary:\033[0m {pal['secondary']}")
+    print(f"\033[1;31m  ✦ Tertiary:\033[0m  {pal['tertiary']}")
+
+    update_noctalia(mode)
+    update_niri(pal)
+    update_cava(pal)
+    update_fuzzel(pal)
+    update_spotify(pal)
+    update_editor_settings(CONFIG_DIR / "VSCodium/User/settings.json", pal)
+    update_editor_settings(CONFIG_DIR / "Antigravity IDE/User/settings.json", pal)
+    update_browsers(pal)
+    update_discord(pal)
+    update_gtk(pal)
+
+    print("\033[1;32m[theme-sync]\033[0m ✔ Synchronized Noctalia, Niri, Alacritty, Btop, CAVA, Fuzzel, GTK 3/4, Editors, Browsers & Apps.")
+
+
+if __name__ == "__main__":
+    main()

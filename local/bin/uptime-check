@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# ────────────── seiza. Uptime & Stability Monitor ──────────────
+
+set -euo pipefail
+
+# Colors
+CYAN="\033[1;36m"
+GREEN="\033[1;32m"
+YELLOW="\033[1;33m"
+RED="\033[1;31m"
+BOLD="\033[1m"
+RESET="\033[0m"
+
+echo -e "${CYAN}──────────────────────────────────────────────────────${RESET}"
+echo -e "${BOLD}        seiza. // Uptime & Stability Monitor          ${RESET}"
+echo -e "${CYAN}──────────────────────────────────────────────────────${RESET}"
+echo ""
+
+# 1. Calculate uptime
+uptime_sec=$(cut -d. -f1 /proc/uptime)
+days=$((uptime_sec / 86400))
+hours=$(((uptime_sec % 86400) / 3600))
+minutes=$(((uptime_sec % 3600) / 60))
+
+echo -e "${BOLD}System Uptime:${RESET} ${CYAN}${days}d ${hours}h ${minutes}m${RESET} (${uptime_sec} total seconds)"
+
+# 2. 4-day Hang Warning Threshold Check
+if [ "$days" -ge 4 ]; then
+    echo ""
+    echo -e "${RED}╔══════════════════════════════════════════════════════════════╗${RESET}"
+    echo -e "${RED}║  ⚠️  WARNING: SYSTEM UPTIME EXCEEDS 4 DAYS (${days} days)        ║${RESET}"
+    echo -e "${RED}║  Known CachyOS hybrid sleep/memory degradation window active ║${RESET}"
+    echo -e "${RED}║  Recommendation: Save your work and reboot soon!             ║${RESET}"
+    echo -e "${RED}╚══════════════════════════════════════════════════════════════╝${RESET}"
+elif [ "$days" -ge 3 ]; then
+    echo -e "${YELLOW}  ⚠️  Warning: System approaching 4-day stability boundary ($((4 - days)) day remaining).${RESET}"
+else
+    echo -e "${GREEN}  ✓ System uptime is healthy (${days} / 4 days before recommended reboot).${RESET}"
+fi
+
+echo ""
+echo -e "${BOLD}Memory & zram Health:${RESET}"
+free -h | awk 'NR<=2 {print "  " $0}'
+if command -v zramctl >/dev/null 2>&1; then
+    echo ""
+    echo -e "${BOLD}zram Compression Devices:${RESET}"
+    zramctl 2>/dev/null | awk '{print "  " $0}' || true
+fi
+
+echo ""
+echo -e "${BOLD}Runaway Memory / CPU Check (Top 5 Processes):${RESET}"
+ps -eo pid,user,%cpu,%mem,rss,comm --sort=-%mem | head -n 6 | awk '
+NR==1 { printf "  %-8s %-10s %-6s %-6s %-10s %s\n", $1, $2, $3, $4, "MEM (MB)", $6 }
+NR>1  { printf "  %-8s %-10s %-6s %-6s %-10.1f %s\n", $1, $2, $3, $4, $5/1024, $6 }
+'
+
+# Check GNOME Tracker status
+echo ""
+echo -e "${BOLD}Background Indexer Leak Guard:${RESET}"
+if [ -L "$HOME/.config/systemd/user/localsearch-3.service" ]; then
+    echo -e "${GREEN}  ✓ localsearch-3 (GNOME Tracker): MASKED (CPU/RAM leak prevented)${RESET}"
+else
+    echo -e "${YELLOW}  ⚠️ localsearch-3 is not masked! Run 'systemctl --user mask localsearch-3.service'${RESET}"
+fi
+
+echo ""
+echo -e "${CYAN}======================================================${RESET}"

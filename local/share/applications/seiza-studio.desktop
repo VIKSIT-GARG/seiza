@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=seiza. Focus Studio
+Comment=Quick notes scratchpad, Pomodoro timer, clipboard snippets & keybinds
+Exec=__HOME__/.local/bin/seiza studio
+Icon=accessories-text-editor
+Terminal=false
+Categories=Utility;Office;
+Keywords=seiza;notes;pomodoro;snippets;clipboard;keys;

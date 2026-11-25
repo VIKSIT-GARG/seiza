@@ -1,0 +1,165 @@
+#!/usr/bin/env bash
+# syscheck — Fast System Health & Diagnostic Utility for CachyOS + Niri
+set -euo pipefail
+
+# ANSI color codes
+CYAN='\033[0;36m'
+BLUE='\033[0;34m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+RED='\033[0;31m'
+BOLD='\033[1m'
+NC='\033[0m'
+
+header() {
+    echo -e "\n${BOLD}${CYAN}=== $1 ===${NC}"
+}
+
+ok() {
+    echo -e "  ${GREEN}✓${NC} $1"
+}
+
+warn() {
+    echo -e "  ${YELLOW}⚠${NC} $1"
+}
+
+alert() {
+    echo -e "  ${RED}✗${NC} $1"
+}
+
+info() {
+    echo -e "  ${BLUE}ℹ${NC} $1"
+}
+
+echo -e "${BOLD}${CYAN}──────────────────────────────────────────────────────"
+echo -e "        seiza. // SYSTEM HEALTH DIAGNOSTIC            "
+echo -e "──────────────────────────────────────────────────────${NC}"
+
+# 1. System & Uptime
+header "System & Kernel"
+UPTIME_STR=$(uptime -p 2>/dev/null || uptime)
+KERNEL_STR=$(uname -r)
+info "OS: CachyOS Linux (x86_64)"
+info "Kernel: ${KERNEL_STR}"
+info "Uptime: ${UPTIME_STR}"
+
+# 2. CPU & Thermals
+header "CPU & Thermals"
+CPU_MODEL=$(lscpu | grep "Model name:" | sed 's/Model name:[ \t]*//' | head -n 1)
+LOAD_AVG=$(cut -d ' ' -f 1-3 /proc/loadavg)
+info "Model: ${CPU_MODEL}"
+info "Load Average (1, 5, 15m): ${LOAD_AVG}"
+if command -v sensors >/dev/null 2>&1; then
+    CPU_TEMP=$(sensors 2>/dev/null | grep -E "Tctl|Package id 0" | head -n 1 | awk '{print $2}' || echo "N/A")
+    info "CPU Temperature: ${CPU_TEMP}"
+fi
+
+# 3. Memory & Zram
+header "Memory & Swap"
+TOTAL_RAM=$(free -h | awk '/^Mem:/ {print $2}')
+USED_RAM=$(free -h | awk '/^Mem:/ {print $3}')
+AVAIL_RAM=$(free -h | awk '/^Mem:/ {print $7}')
+info "RAM: ${USED_RAM} used / ${TOTAL_RAM} total (${AVAIL_RAM} available)"
+if command -v zramctl >/dev/null 2>&1; then
+    ZRAM_INFO=$(zramctl --noheadings --output DATA,COMPR,TOTAL 2>/dev/null | head -n 1 || echo "")
+    if [ -n "${ZRAM_INFO}" ]; then
+        info "zram (Data/Compr/Total): ${ZRAM_INFO}"
+    fi
+fi
+
+# 4. GPU & NVIDIA Status
+header "Graphics & NVIDIA"
+if lspci -k 2>/dev/null | grep -q "HawkPoint"; then
+    info "Integrated GPU: AMD Radeon 780M (amdgpu)"
+fi
+
+if command -v nvidia-smi >/dev/null 2>&1; then
+    NVIDIA_INFO=$(nvidia-smi --query-gpu=name,driver_version,temperature.gpu,utilization.gpu,memory.used,memory.total,power.draw,persistence_mode --format=csv,noheader,nounits 2>/dev/null || echo "")
+    if [ -n "${NVIDIA_INFO}" ]; then
+        IFS=',' read -r GPU_NAME NV_DRV GPU_TEMP GPU_UTIL VRAM_USED VRAM_TOTAL PWR PERSIST <<< "${NVIDIA_INFO}"
+        info "NVIDIA GPU: ${GPU_NAME// /} (Driver: ${NV_DRV// /})"
+        info "Utilization: ${GPU_UTIL// /}% | Temp: ${GPU_TEMP// /}°C | Power: ${PWR// /}W"
+        info "VRAM: ${VRAM_USED// /} MiB / ${VRAM_TOTAL// /} MiB"
+        if [[ "${PERSIST// /}" == "Enabled" ]]; then
+            ok "Persistence Mode: Enabled"
+        else
+            warn "Persistence Mode: Disabled (Enable nvidia-persistenced for stability)"
+        fi
+    else
+        alert "NVIDIA driver query failed."
+    fi
+else
+    warn "nvidia-smi not found"
+fi
+
+# 5. Disk Usage
+header "Filesystem Storage"
+DISK_USAGE=$(df -h / | awk 'NR==2 {print $3 " used / " $2 " total (" $5 " full, " $4 " free)"}')
+info "Root (/): ${DISK_USAGE}"
+
+# 6. Systemd Failed Services
+header "Systemd Services Health"
+SYS_FAILED=$(systemctl --failed --no-legend 2>/dev/null | wc -l || echo 0)
+USER_FAILED=$(systemctl --user --failed --no-legend 2>/dev/null | wc -l || echo 0)
+if [ "${SYS_FAILED}" -eq 0 ]; then
+    ok "System services: 0 failed"
+else
+    alert "System services: ${SYS_FAILED} failed unit(s)"
+    systemctl --failed --no-legend | head -n 5 | awk '{print "    - " $2}'
+fi
+
+if [ "${USER_FAILED}" -eq 0 ]; then
+    ok "User services: 0 failed"
+else
+    alert "User services: ${USER_FAILED} failed unit(s)"
+    systemctl --user --failed --no-legend | head -n 5 | awk '{print "    - " $2}'
+fi
+
+# 7. Desktop Compositor & Shell
+header "Compositor & Shell Status"
+if pgrep -u "$USER" niri >/dev/null 2>&1; then
+    NIRI_PID=$(pgrep -u "$USER" niri | head -n 1)
+    ok "Niri Compositor: Running (PID ${NIRI_PID})"
+else
+    alert "Niri Compositor: Not running"
+fi
+
+if pgrep -u "$USER" noctalia >/dev/null 2>&1; then
+    NOCTALIA_PID=$(pgrep -u "$USER" noctalia | head -n 1)
+    ok "Noctalia Desktop Shell: Running (PID ${NOCTALIA_PID})"
+    if command -v noctalia >/dev/null 2>&1; then
+        SHELL_STAT=$(noctalia msg status 2>/dev/null || echo "")
+        if [ -n "${SHELL_STAT}" ]; then
+            info "Noctalia IPC: Connected (${SHELL_STAT})"
+        fi
+    fi
+else
+    alert "Noctalia Desktop Shell: Not running"
+fi
+
+# 8. Package Management & Updates
+header "Package Manager Health"
+if [ -f /var/lib/pacman/db.lck ]; then
+    alert "Pacman database lock (/var/lib/pacman/db.lck) exists!"
+else
+    ok "Pacman database: Healthy (no stale lock)"
+fi
+
+if command -v checkupdates >/dev/null 2>&1; then
+    UPDATES_COUNT=$(checkupdates 2>/dev/null | wc -l || echo "0")
+    if [ "${UPDATES_COUNT}" -eq 0 ]; then
+        ok "System updates: Fully up to date"
+    else
+        info "Available updates: ${UPDATES_COUNT} package(s) available"
+    fi
+fi
+
+# 9. Stability & Runaway Processes
+header "Runaway Indexer & Stability"
+if [ "$(systemctl --user is-enabled localsearch-3.service 2>/dev/null || true)" = "masked" ]; then
+    ok "localsearch-3 (GNOME Tracker indexer): Masked (CPU & Memory leaks prevented)"
+else
+    warn "localsearch-3 is not masked; may consume excessive CPU/RAM"
+fi
+
+echo -e "\n${BOLD}${CYAN}──────────────────────────────────────────────────────${NC}\n"

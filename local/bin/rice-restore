@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+# rice-restore — Restoration utility for CachyOS + Niri desktop configuration
+set -euo pipefail
+
+BACKUP_ROOT="${HOME}/.config/rice_backups"
+
+if [ ! -d "${BACKUP_ROOT}" ]; then
+    echo "Error: No backup directory found at ${BACKUP_ROOT}" >&2
+    exit 1
+fi
+
+TARGET_BACKUP="${1:-}"
+
+if [ -z "${TARGET_BACKUP}" ]; then
+    echo "Available backups:"
+    mapfile -t BACKUPS < <(ls -1d "${BACKUP_ROOT}"/backup_* "${BACKUP_ROOT}"/pre_* 2>/dev/null | sort)
+    if [ ${#BACKUPS[@]} -eq 0 ]; then
+        echo "No backups found."
+        exit 1
+    fi
+    for i in "${!BACKUPS[@]}"; do
+        echo "  [$i] $(basename "${BACKUPS[$i]}")"
+    done
+    echo ""
+    read -r -p "Enter backup number to restore (default: latest [$((${#BACKUPS[@]} - 1))]): " CHOICE
+    CHOICE="${CHOICE:-$((${#BACKUPS[@]} - 1))}"
+    TARGET_BACKUP="${BACKUPS[$CHOICE]}"
+fi
+
+if [ ! -d "${TARGET_BACKUP}" ]; then
+    if [ -d "${BACKUP_ROOT}/${TARGET_BACKUP}" ]; then
+        TARGET_BACKUP="${BACKUP_ROOT}/${TARGET_BACKUP}"
+    else
+        echo "Error: Backup path not found: ${TARGET_BACKUP}" >&2
+        exit 1
+    fi
+fi
+
+if [ -x "${TARGET_BACKUP}/rollback.sh" ]; then
+    exec "${TARGET_BACKUP}/rollback.sh"
+fi
+
+echo "==> Restoring from: ${TARGET_BACKUP}"
+
+CONFIG_DIRS=(
+    "niri"
+    "noctalia"
+    "alacritty"
+    "fish"
+    "fastfetch"
+    "gtk-3.0"
+    "gtk-4.0"
+    "fontconfig"
+    "fuzzel"
+    "micro"
+    "zathura"
+    "btop"
+    "cava"
+    "xdg-desktop-portal"
+    "environment.d"
+)
+
+for dir in "${CONFIG_DIRS[@]}"; do
+    if [ -d "${TARGET_BACKUP}/${dir}" ]; then
+        echo " -> Restoring ~/.config/${dir}..."
+        mkdir -p "${HOME}/.config/${dir}"
+        cp -a "${TARGET_BACKUP}/${dir}/"* "${HOME}/.config/${dir}/" 2>/dev/null || true
+    fi
+done
+
+for file in starship.toml kdeglobals QtProject.conf cyberglass_theme_mode.txt; do
+    if [ -f "${TARGET_BACKUP}/${file}" ]; then
+        echo " -> Restoring ~/.config/${file}..."
+        cp -a "${TARGET_BACKUP}/${file}" "${HOME}/.config/${file}"
+    fi
+done
+
+if [ -d "${TARGET_BACKUP}/local_state_noctalia" ]; then
+    echo " -> Restoring ~/.local/state/noctalia..."
+    mkdir -p "${HOME}/.local/state/noctalia"
+    cp -a "${TARGET_BACKUP}/local_state_noctalia/"* "${HOME}/.local/state/noctalia/" 2>/dev/null || true
+fi
+
+echo "==> Reloading Niri and Noctalia..."
+niri msg action load-config-file 2>/dev/null || true
+noctalia msg config-reload 2>/dev/null || true
+noctalia msg templates-apply 2>/dev/null || true
+echo "==> Restoration complete."

@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# universal-copy / universal-paste — Super+C / Super+V that behave like Ctrl+C / Ctrl+V
+# everywhere, sending Ctrl+Shift+C/V inside terminals (where bare Ctrl+C = SIGINT).
+# Backend: wtype (preferred, Wayland-native) with ydotool fallback (ydotoold running).
+# Usage: universal-copy | universal-paste
+set -euo pipefail
+
+MODE="${1:-copy}"  # copy | paste
+if [ "$MODE" != "copy" ] && [ "$MODE" != "paste" ]; then
+    echo "usage: $(basename "$0") [copy|paste]" >&2
+    exit 1
+fi
+
+KEY="$([ "$MODE" = copy ] && echo c || echo v)"
+
+# Niri fires the bind while Super is still held; brief delay lets the user release
+# it so the target app sees a clean Ctrl+C/V instead of Super+Ctrl+C/V.
+sleep 0.2
+
+IS_TERM="$(niri msg -j focused-window | python3 -c "
+import json,sys
+app = (json.load(sys.stdin).get('app_id') or '').lower()
+terms = {'alacritty','foot','footclient','kitty','wezterm','ghostty','contour','wezterm-gui','ptyxis','blackbox'}
+print('1' if app in terms else '0')
+")"
+
+if command -v wtype >/dev/null 2>&1; then
+    if [ "$IS_TERM" = "1" ]; then
+        wtype -M ctrl -M shift "$KEY" -m shift -m ctrl
+    else
+        wtype -M ctrl "$KEY" -m ctrl
+    fi
+elif command -v ydotool >/dev/null 2>&1; then
+    if [ "$IS_TERM" = "1" ]; then
+        ydotool key "ctrl+shift+$KEY"
+    else
+        ydotool key "ctrl+$KEY"
+    fi
+else
+    notify-send "universal-$MODE" "Neither wtype nor ydotool found. Install wtype: paru -S wtype" 2>/dev/null || true
+    exit 1
+fi

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=seiza. Command Centre
+Comment=Unified palette for apps, files, calc, workspaces, clipboard & bookmarks
+Exec=__HOME__/.local/bin/seiza palette
+Icon=system-search
+Terminal=false
+Categories=System;Utility;
+Keywords=seiza;palette;launcher;search;command;

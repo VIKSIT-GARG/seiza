@@ -1,0 +1,32 @@
+# Fish completions for seiza. CLI toolkit
+set -l subcmds help welcome status gpu clean update doctor backup restore display theme network workspace keys dashboard palette color ocr record studio notes pomodoro snippets
+
+complete -c seiza -f
+complete -c seiza -n "not __fish_seen_subcommand_from $subcmds" -a help -d "List all available commands"
+complete -c seiza -n "not __fish_seen_subcommand_from $subcmds" -a welcome -d "Show terminal welcome dashboard"
+complete -c seiza -n "not __fish_seen_subcommand_from $subcmds" -a status -d "Overall system health"
+complete -c seiza -n "not __fish_seen_subcommand_from $subcmds" -a gpu -d "GPU statistics, VRAM & estimator"
+complete -c seiza -n "not __fish_seen_subcommand_from $subcmds" -a clean -d "Preview and safely clean caches"
+complete -c seiza -n "not __fish_seen_subcommand_from $subcmds" -a update -d "System updates & Pacman receipts"
+complete -c seiza -n "not __fish_seen_subcommand_from $subcmds" -a doctor -d "Diagnose failed services & configs"
+complete -c seiza -n "not __fish_seen_subcommand_from $subcmds" -a backup -d "Create desktop config snapshot"
+complete -c seiza -n "not __fish_seen_subcommand_from $subcmds" -a restore -d "Restore a configuration snapshot"
+complete -c seiza -n "not __fish_seen_subcommand_from $subcmds" -a display -d "External display management"
+complete -c seiza -n "not __fish_seen_subcommand_from $subcmds" -a theme -d "Wallpaper & theme controls"
+complete -c seiza -n "not __fish_seen_subcommand_from $subcmds" -a network -d "Network diagnostics"
+complete -c seiza -n "not __fish_seen_subcommand_from $subcmds" -a workspace -d "Launch curated workspace presets"
+complete -c seiza -n "not __fish_seen_subcommand_from $subcmds" -a keys -d "Searchable keyboard shortcut cheatsheet"
+complete -c seiza -n "not __fish_seen_subcommand_from $subcmds" -a dashboard -d "Open AI, ML & Health GUI Dashboard"
+complete -c seiza -n "not __fish_seen_subcommand_from $subcmds" -a palette -d "Open Universal Command Centre"
+complete -c seiza -n "not __fish_seen_subcommand_from $subcmds" -a color -d "Pick screen color to clipboard"
+complete -c seiza -n "not __fish_seen_subcommand_from $subcmds" -a ocr -d "Region OCR capture"
+complete -c seiza -n "not __fish_seen_subcommand_from $subcmds" -a record -d "Screen recording toggle"
+complete -c seiza -n "not __fish_seen_subcommand_from $subcmds" -a studio -d "Open Focus Studio"
+complete -c seiza -n "not __fish_seen_subcommand_from $subcmds" -a notes -d "Open Quick Scratchpad"
+complete -c seiza -n "not __fish_seen_subcommand_from $subcmds" -a pomodoro -d "Open Pomodoro Focus Timer"
+complete -c seiza -n "not __fish_seen_subcommand_from $subcmds" -a snippets -d "Clipboard snippets & sensitive shield"
+
+complete -c seiza -n "__fish_seen_subcommand_from workspace" -a "development ai-research electronics focus everyday"
+complete -c seiza -n "__fish_seen_subcommand_from display" -a "list status internal extend mirror present profiles"
+complete -c seiza -n "__fish_seen_subcommand_from theme" -a "status seiza dynamic next prev random list set"
+complete -c seiza -n "__fish_seen_subcommand_from snippets" -a "list add copy clear-history"

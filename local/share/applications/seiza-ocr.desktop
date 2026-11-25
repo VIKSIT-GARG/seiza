@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=seiza. Region OCR
+Comment=Capture screen region and extract text or image
+Exec=__HOME__/.local/bin/seiza ocr
+Icon=accessories-screenshot
+Terminal=false
+Categories=Utility;Graphics;
+Keywords=seiza;ocr;text;region;screen;

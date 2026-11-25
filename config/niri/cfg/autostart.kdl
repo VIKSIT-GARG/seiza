@@ -1,0 +1,12 @@
+// ────────────── seiza. — Startup Applications ──────────────
+// https://github.com/YaLTeR/niri/wiki/Configuration:-Miscellaneous#spawn-sh-at-startup
+
+// Propagate Wayland, GSK OpenGL renderer, cursor, and GTK-backed Qt theme cleanly
+spawn-sh-at-startup "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE GSK_RENDERER=gl XCURSOR_THEME=capitaine-cursors XCURSOR_SIZE=24 HYPRCURSOR_THEME=capitaine-cursors HYPRCURSOR_SIZE=24 GTK_THEME=adw-gtk3-dark QT_QPA_PLATFORMTHEME=gtk3"
+spawn-sh-at-startup "systemctl --user set-environment XCURSOR_THEME=capitaine-cursors XCURSOR_SIZE=24 HYPRCURSOR_THEME=capitaine-cursors HYPRCURSOR_SIZE=24 GTK_THEME=adw-gtk3-dark QT_QPA_PLATFORMTHEME=gtk3 GSK_RENDERER=gl"
+
+// Apply unified GNOME/GTK desktop interface preferences
+spawn-sh-at-startup "gsettings set org.gnome.desktop.interface cursor-theme 'capitaine-cursors' && gsettings set org.gnome.desktop.interface cursor-size 24 && gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3-dark' && gsettings set org.gnome.desktop.interface icon-theme 'Papirus-Dark' && gsettings set org.gnome.desktop.interface font-name 'Adwaita Sans 10.5' && gsettings set org.gnome.desktop.interface monospace-font-name 'JetBrainsMono Nerd Font 10.5' && gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'"
+
+// Launch Noctalia Desktop Shell (daemon mode)
+spawn-sh-at-startup "noctalia -d"

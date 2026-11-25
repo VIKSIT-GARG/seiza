@@ -1,0 +1,11 @@
+[Unit]
+Description=Cliphist text clipboard watcher (wl-paste -> cliphist store)
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=/usr/bin/wl-paste --type text --watch /usr/bin/cliphist store
+Restart=on-failure
+
+[Install]
+WantedBy=graphical-session.target

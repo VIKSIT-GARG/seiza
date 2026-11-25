@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=seiza. AI & Health Dashboard
+Comment=GPU VRAM, CUDA telemetry, model estimator, health & Pacman receipts
+Exec=__HOME__/.local/bin/seiza dashboard
+Icon=utilities-system-monitor
+Terminal=false
+Categories=System;Monitor;Development;
+Keywords=seiza;gpu;nvidia;cuda;ai;vram;health;receipts;

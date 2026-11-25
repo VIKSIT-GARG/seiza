@@ -1,0 +1,68 @@
+# ────────────── seiza. // A system of my own. — Alacritty Configuration ──────────────
+[general]
+import = [
+    "~/.config/alacritty/themes/noctalia.toml",
+]
+live_config_reload = true
+
+[env]
+TERM = "xterm-256color"
+
+[window]
+padding = { x = 22, y = 18 }
+dynamic_padding = true
+opacity = 0.94
+blur = false
+decorations = "None"
+decorations_theme_variant = "Dark"
+title = "seiza."
+
+[scrolling]
+history = 15000
+multiplier = 3
+
+[font]
+size = 11.5
+
+[font.normal]
+family = "JetBrainsMono Nerd Font"
+style = "Regular"
+
+[font.bold]
+family = "JetBrainsMono Nerd Font"
+style = "Bold"
+
+[font.italic]
+family = "JetBrainsMono Nerd Font"
+style = "Italic"
+
+[font.bold_italic]
+family = "JetBrainsMono Nerd Font"
+style = "Bold Italic"
+
+[font.offset]
+x = 0
+y = 2
+
+[selection]
+semantic_escape_chars = ",│`|:\"' ()[]{}<>\t"
+save_to_clipboard = true
+
+[cursor]
+style = { shape = "Beam", blinking = "On" }
+thickness = 0.15
+unfocused_hollow = true
+blink_interval = 560
+
+[mouse]
+hide_when_typing = true
+
+[keyboard]
+bindings = [
+    { key = "Return", mods = "Shift", chars = "\u001B\r" },
+    { key = "C", mods = "Control|Shift", action = "Copy" },
+    { key = "V", mods = "Control|Shift", action = "Paste" },
+    { key = "F", mods = "Control|Shift", action = "SearchForward" },
+    { key = "B", mods = "Control|Shift", action = "SearchBackward" },
+    { key = "Key0", mods = "Control", action = "ResetFontSize" },
+]

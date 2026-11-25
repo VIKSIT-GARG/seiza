@@ -1,0 +1,82 @@
+// ────────────── seiza. — Crisp Window & Layer Rules (No Unwanted Blur) ──────────────
+// https://github.com/YaLTeR/niri/wiki/Configuration:-Window-Rules
+
+window-rule {
+    geometry-corner-radius 12
+    clip-to-geometry true
+}
+
+// Slight crisp opacity for Alacritty without blurry text halo
+window-rule {
+    match app-id=r#"^(Alacritty|kitty|foot|footclient)$"#
+    opacity 0.94
+}
+
+// Floating utility dialogs & system tools
+window-rule {
+    match app-id=r#"^(pavucontrol|org\.pulseaudio\.pavucontrol|cachyos-pi|octopi|cachyos-hello|file-roller|zenity|org\.gnome\.FileRoller|nm-connection-editor|blueman-manager|kalk|org\.kde\.kalk)$"#
+    open-floating true
+}
+
+// Steam floating subwindows
+window-rule {
+    match app-id="steam"
+    exclude title=r#"^[Ss]team$"#
+    open-floating true
+}
+
+window-rule {
+    match app-id="steam" title=r#"^notificationtoasts_\d+_desktop$"#
+    default-floating-position x=12 y=12 relative-to="bottom-right"
+    open-focused false
+}
+
+// Scratchpad quake console (Mod+S / Mod+Grave via niri-scratchpad)
+window-rule {
+    match app-id="scratchpad"
+    open-floating true
+    open-focused true
+    opacity 0.95
+    default-column-width { proportion 0.90; }
+    default-window-height { proportion 0.50; }
+    default-floating-position x=0 y=8 relative-to="top"
+}
+
+// seiza. floating companion tools & command palette
+window-rule {
+    match app-id="seiza-palette"
+    open-floating true
+    open-focused true
+    default-column-width { fixed 820; }
+    default-window-height { fixed 580; }
+}
+
+window-rule {
+    match app-id="seiza-display"
+    open-floating true
+    open-focused true
+    default-column-width { fixed 880; }
+    default-window-height { fixed 640; }
+}
+
+window-rule {
+    match app-id="seiza-studio"
+    open-floating true
+    open-focused true
+    default-column-width { fixed 960; }
+    default-window-height { fixed 650; }
+}
+
+window-rule {
+    match app-id="seiza-dashboard"
+    open-floating true
+    open-focused true
+    default-column-width { fixed 1060; }
+    default-window-height { fixed 740; }
+}
+
+// Noctalia wallpaper & backdrop surfaces sit cleanly in overview backdrop
+layer-rule {
+    match namespace="^noctalia-(wallpaper|backdrop)*"
+    place-within-backdrop true
+}

@@ -1,0 +1,22 @@
+id = "viksit-garg/seiza"
+name = "seiza. Hub"
+version = "1.0.0"
+plugin_api = 43
+author = "viksit-garg"
+license = "MIT"
+icon = "sparkles"
+description = "Personal workstation launcher hub and control center shortcuts for seiza."
+tags = ["utility", "productivity", "panel"]
+
+[[panel]]
+id = "hub"
+entry = "panel.luau"
+width = 500
+height = 650
+placement = "floating"
+position = "auto"
+open_near_click = true
+
+[[shortcut]]
+id = "tile"
+entry = "shortcut.luau"

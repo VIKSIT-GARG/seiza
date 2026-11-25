@@ -1,0 +1,32 @@
+// ────────────── Input Configuration ──────────────
+// https://github.com/YaLTeR/niri/wiki/Configuration:-Input
+
+input {
+    keyboard {
+        xkb {
+            //layout "us"
+        }
+        numlock
+    }
+
+    touchpad {
+        tap
+        natural-scroll
+    }
+
+    mouse {
+        //accel-profile "flat"
+        //accel-speed 0.0
+    }
+
+    focus-follows-mouse
+    workspace-auto-back-and-forth
+}
+
+// ────────────── Gestures & Hot Corners ──────────────
+// Disable overview trigger on mouse drag or top-left corner brush
+gestures {
+    hot-corners {
+        off
+    }
+}

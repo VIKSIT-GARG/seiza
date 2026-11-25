@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=seiza. Display Studio
+Comment=Niri Wayland monitor layouts, extend, wl-mirror & presentation profiles
+Exec=__HOME__/.local/bin/seiza display
+Icon=preferences-desktop-display
+Terminal=false
+Categories=Settings;HardwareSettings;
+Keywords=seiza;display;monitor;hdmi;mirror;extend;
